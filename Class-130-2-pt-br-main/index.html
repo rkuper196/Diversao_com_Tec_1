@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>APP DJ DE IA ONLINE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/p5.js"></script>
+  <script src="https://unpkg.com/ml5@0.4.3/dist/ml5.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/addons/p5.sound.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/addons/p5.sound.min.js"></script>
+  
+ 
+</head>
+<body background="https://mahdihat791.github.io/Ai-DJ/background.jpg">
+<center>
+  	<h3 class="btn btn-warning heading">AI DJ WEB APP
+	    <br>
+	    <span class="note">OBSERVAÇÃO - Mova o pulso da sua mão esquerda para cima e para baixo para aumentar e diminuir o volume
+			 Mova o pulso da sua mão direita para cima e para baixo para aumentar e diminuir a velocidade</span>
+  	</h3>
+
+	<div class="div_speed">
+		<img src="https://mahdihat791.github.io/Ai-DJ/disk.gif" class="div_speed_img">
+		<br>
+		<h3 class="btn btn-danger" id="speed">Velocidade</h3>
+	</div>
+
+	<div class="div_volume">
+		<img src="https://mahdihat791.github.io/Ai-DJ/disk.gif" class="div_volume_img">
+		<br>
+		<h3 class="btn btn-danger" id="volume">Volume</h3>
+	</div>
+
+	<br><br>
+
+	<button onclick="play();" class="btn btn-success play_button">Tocar</button>
+
+</center>
+
+<script src="main.js"></script>
+</body>
+<style>
+    .heading
+{
+  font-size: 23px;
+  width: 100%;
+  margin: 0px;
+}
+.note
+{
+  font-size: 15px;
+  color: black;
+}
+body
+{
+  background-size: cover;	
+}
+  .div_speed
+  {
+  	float: left;
+  }
+  .div_speed_img
+  {
+  	width: 200px; 
+  	border-radius: 100px;
+  }
+  #speed
+  {
+  	font-size: 23px;
+  	margin: 15px;
+  }
+  .div_volume
+  {
+  	float: right;	
+  }
+  .div_volume_img
+  {
+  	width: 200px; 
+  	border-radius: 100px;
+  }
+  #volume
+  {
+  	font-size: 23px;
+  	margin: 15px;
+  }
+   .play_button
+  {
+  	width: 130px;
+  	font-size: 25px;
+  }
+    canvas 
+  {
+    border:5px solid white;
+    border-radius:20px;
+  }
+</style>
+<script>
+    song = "";
+
+function preload()
+{
+	song = loadSound("music.mp3");
+}
+
+scoreRightWrist = 0;
+scoreLeftWrist = 0;
+
+rightWristX = 0;
+rightWristY = 0;
+
+leftWristX = 0;
+leftWristY = 0;
+
+function setup() {
+	canvas =  createCanvas(600, 500);
+	canvas.center();
+
+	video = createCapture(VIDEO);
+	video.hide();
+
+	poseNet = ml5.poseNet(video, modelLoaded);
+	poseNet.on('pose', gotPoses);
+}
+
+function modelLoaded() {
+  console.log('PoseNet Is Initialized');
+}
+
+function gotPoses(results)
+{
+  if(results.length > 0)
+  {
+	scoreRightWrist =  results[0].pose.keypoints[10].score;
+	scoreLeftWrist =  results[0].pose.keypoints[9].score;
+	console.log("scoreRightWrist = " + scoreRightWrist + " scoreLeftWrist = " + scoreLeftWrist);
+	
+	rightWristX = results[0].pose.rightWrist.x;
+	rightWristY = results[0].pose.rightWrist.y;
+	console.log("rightWristX = " + rightWristX +" rightWristY = "+ rightWristY);
+
+	leftWristX = results[0].pose.leftWrist.x;
+	leftWristY = results[0].pose.leftWrist.y;
+	console.log("leftWristX = " + leftWristX +" leftWristY = "+ leftWristY);
+		
+  }
+}
+
+function draw() {
+	image(video, 0, 0, 600, 500);
+
+	fill("#FF0000");
+	stroke("#FF0000");
+
+	if(scoreRightWrist > 0.2)
+	{ 
+		circle(rightWristX,rightWristY,20);
+
+		if(rightWristY >0 && rightWristY <= 100)
+		{
+			document.getElementById("speed").innerHTML = "Speed = 0.5x";		
+			song.rate(0.5);
+		}
+		else if(rightWristY >100 && rightWristY <= 200)
+		{
+			document.getElementById("speed").innerHTML = "Speed = 1x";		
+			song.rate(1);
+		}
+		else if(rightWristY >200 && rightWristY <= 300)
+		{
+			document.getElementById("speed").innerHTML = "Speed = 1.5x";		
+			song.rate(1.5);
+		}
+		else if(rightWristY >300 && rightWristY <= 400)
+		{
+			document.getElementById("speed").innerHTML = "Speed = 2x";		
+			song.rate(2);
+		}
+		else if(rightWristY >400)
+		{
+			document.getElementById("speed").innerHTML = "Speed = 2.5x";		
+			song.rate(2.5);
+		}
+	}
+
+	if(scoreLeftWrist > 0.2)
+	{
+		circle(leftWristX,leftWristY,20);
+		InNumberleftWristY = Number(leftWristY);
+		new_leftWristY = floor(InNumberleftWristY *2);
+		leftWristY_divide_1000 = new_leftWristY/1000;
+		document.getElementById("volume").innerHTML = "Volume = " + leftWristY_divide_1000;		
+		song.setVolume(leftWristY_divide_1000);	
+	}
+
+}
+
+function play()
+{
+	song.play();
+	song.setVolume(1);
+	song.rate(1);
+}
+</script>
+</html>
